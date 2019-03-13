@@ -3,7 +3,7 @@ from aiohttp import web
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: add 404 and other errors
 @web.middleware
 async def error_middleware(request, handler):
     try:

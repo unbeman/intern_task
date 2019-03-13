@@ -1,14 +1,28 @@
 from aiohttp import web
 from middlewares import error_middleware
 import initial
+from request_handler.request_handler import RequestHandler
+from controller.controller import Controller
+from database_connector.postgres_connector import AsyncPostgresqlConnector
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def on_start_tasks(app: web.Application) -> None:
-    pass
+async def on_start_tasks(app: web.Application) -> None:
+    db_connector = AsyncPostgresqlConnector(**app['database_settings'])
+    await db_connector.create_pool()
+    app['db_connector'] = db_connector
+    controller = Controller(db_connector)
+    app['controller'] = controller
+    request_handler = RequestHandler(app, controller)
+    app['request_handler'] = request_handler
+    logger.info('Server started')
 
 
-def on_shutdown_tasks(app: web.Application) -> None:
-    pass
+async def on_shutdown_tasks(app: web.Application) -> None:
+    await app['db_connector'].close_pool()
+    logger.info('Server stopped')
 
 
 app = web.Application(middlewares=[error_middleware])
