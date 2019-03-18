@@ -16,31 +16,26 @@ class RequestHandler:
         app.router.add_post('/company', self.create_company)
         app.router.add_post('/company/{company_id}', self.update_company)
         app.router.add_get('/company/{company_id}', self.get_company)
+        app.router.add_get('/company/{company_id}/workers', self.get_workers_of_company)
         app.router.add_post('/worker', self.create_worker)
         app.router.add_post('/worker/{worker_id}', self.update_worker)
         app.router.add_get('/worker/{worker_id}', self.get_worker)
-        app.router.add_post('/worker/bind', self.bind_worker_to_company)
-        app.router.add_post('/worker/{worker_id}/goods', self.assign_worker_to_goods)
-        app.router.add_post('/storefront/filling', self.fill_storefront)
+        # app.router.add_post('/worker/bind', self.bind_worker_to_company)
+        app.router.add_post('/item/{item_id}/assign', self.assign_worker_to_item)
+        app.router.add_post('/item/{item_id}', self.update_item)
+        app.router.add_post('/storefront', self.fill_storefront)
+        app.router.add_get('/storefront', self.get_goods_in_storefront)
 
     async def create_company(self, request: web.Request) -> web.Response:
         data = await request.json()
-        try:
-            jsonschema.validate(data, utils.create_company_schema)
-        except jsonschema.ValidationError as e:
-            logger.error(e)
-            raise web.HTTPUnprocessableEntity()
+        jsonschema.validate(data, utils.create_company_schema)
         answer = await self.controller.create_company(data)
         return web.json_response(answer)
 
     async def update_company(self, request: web.Request) -> web.Response:
         company_id = request.match_info['company_id']
         data = await request.json()
-        try:
-            jsonschema.validate(data, utils.update_company_schema)
-        except jsonschema.ValidationError as e:
-            logger.error(e)
-            raise web.HTTPUnprocessableEntity()
+        jsonschema.validate(data, utils.update_company_schema)
         await self.controller.update_company(company_id, data)
         return web.Response()
 
@@ -51,22 +46,14 @@ class RequestHandler:
 
     async def create_worker(self, request: web.Request) -> web.Response:
         data = await request.json()
-        try:
-            jsonschema.validate(data, utils.create_worker_schema)
-        except jsonschema.ValidationError as e:
-            logger.error(e)
-            raise web.HTTPUnprocessableEntity()
+        jsonschema.validate(data, utils.create_worker_schema)
         answer = await self.controller.create_worker(data)
         return web.json_response(answer)
 
     async def update_worker(self, request: web.Request) -> web.Response:
         worker_id = request.match_info['worker_id']
         data = await request.json()
-        try:
-            jsonschema.validate(data, utils.update_worker_schema)
-        except jsonschema.ValidationError as e:
-            logger.error(e)
-            raise web.HTTPUnprocessableEntity()
+        jsonschema.validate(data, utils.update_worker_schema)
         await self.controller.update_worker(worker_id, data)
         return web.Response()
 
@@ -75,12 +62,35 @@ class RequestHandler:
         answer = await self.controller.get_worker(worker_id)
         return web.json_response(answer)
 
-    # not implemented yet
-    async def bind_worker_to_company(self, request: web.Request) -> web.Response:
-        pass
-
     async def fill_storefront(self, request: web.Request) -> web.Response:
+        data = await request.json()
+        jsonschema.validate(data, utils.goods_schema)
+        await self.controller.add_items(data)
+        return web.Response()
+
+    async def get_goods_in_storefront(self, request: web.Request) -> web.Response:
+        answer = await self.controller.get_items_list()
+        return web.json_response(answer)
+
+    async def assign_worker_to_item(self, request: web.Request) -> web.Response:
+        item_id = request.match_info['item_id']
+        data = await request.json()
+        jsonschema.validate(data, utils.assign_worker_to_item_schema)
+        await self.controller.assign_worker_to_item(item_id, data)
+        return web.Response()
+
+    async def update_item(self, request: web.Request) -> web.Response:
+        item_id = request.match_info['item_id']
+        data = await request.json()
+        jsonschema.validate(data, utils.update_item_schema)
+        await self.controller.update_item(item_id, data)
+        return web.Response()
+
+    async def get_workers_of_company(self, request: web.Request):
         pass
 
-    async def assign_worker_to_goods(self, request: web.Request) -> web.Response:
+    async def get_goods_of_company(self, request: web.Request):
+        pass
+
+    async def get_companies(self, request: web.Request):
         pass

@@ -66,3 +66,75 @@ update_worker_schema = {
         }
     }
 }
+
+goods_schema = {
+    "type": "array",
+    "items": {"type": "object",
+              "properties": {
+                  "title": {
+                      "type": "string"
+                  },
+                  "description": {
+                      "type": "string"
+                  },
+                  "price": {
+                      "type": "integer"
+                  },
+                  "count": {
+                      "type": "integer"
+                  },
+                  "worker_id": {
+                      "type": "integer"
+                  },
+                  "company_id": {
+                      "type": "integer"
+                  }
+              }},
+    "required": [
+        "title",
+        "price",
+        "company_id"
+    ]
+
+}
+
+assign_worker_to_item_schema = {
+    "type": "object",
+    "properties": {
+        "worker_id": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "worker_id"
+    ]
+}
+
+update_item_schema = {
+    "type": "object",
+    "properties": {
+        "description": {
+            "type": "string"
+        },
+        "price": {
+            "type": "integer"
+        },
+        "count": {
+            "type": "integer"
+        },
+        "worker_id": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "worker_id"
+    ]
+}
+
+
+class RecordNotFound(Exception):
+    pass
+
+
+class TransactionFailed(Exception):
+    pass

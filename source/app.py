@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 async def on_start_tasks(app: web.Application) -> None:
     db_connector = AsyncPostgresqlConnector(**app['database_settings'])
-    await db_connector.create_pool()
+    await db_connector.init()
     app['db_connector'] = db_connector
     controller = Controller(db_connector)
     app['controller'] = controller
@@ -21,7 +21,7 @@ async def on_start_tasks(app: web.Application) -> None:
 
 
 async def on_shutdown_tasks(app: web.Application) -> None:
-    await app['db_connector'].close_pool()
+    await app['db_connector'].close()
     logger.info('Server stopped')
 
 
