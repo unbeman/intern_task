@@ -1,3 +1,5 @@
+import sys
+
 from aiohttp import web
 from middlewares import error_middleware
 import initial
@@ -25,8 +27,18 @@ async def on_shutdown_tasks(app: web.Application) -> None:
     logger.info('Server stopped')
 
 
-app = web.Application(middlewares=[error_middleware])
-initial.init_app_settings(app)
-app.on_startup.append(on_start_tasks)
-app.on_shutdown.append(on_shutdown_tasks)
-web.run_app(app, host=app['host'], port=app['port'])
+def init_app(argv):
+    app = web.Application(middlewares=[error_middleware])
+    initial.init_app_settings(app, argv)
+    app.on_startup.append(on_start_tasks)
+    app.on_shutdown.append(on_shutdown_tasks)
+    return app
+
+
+def main(argv):
+    app = init_app(argv)
+    web.run_app(app, host=app['host'], port=app['port'])
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

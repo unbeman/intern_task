@@ -11,7 +11,7 @@ def get_config(path: str) -> None:
     return config.__dict__['_sections']
 
 
-def parse_args():
+def parse_args(argv):
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('-c', '--config', dest='config', type=get_config, help='Path to config file with ini format\n'
                                                                                'Schema:\n'
@@ -26,7 +26,7 @@ def parse_args():
                                                                                'user\n'
                                                                                'password\n'
                         )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def init_logging(log_level: str) -> None:
@@ -34,8 +34,8 @@ def init_logging(log_level: str) -> None:
     logging.basicConfig(format=fmt, level=logging.getLevelName(log_level))
 
 
-def init_app_settings(app: web.Application) -> None:
-    args = parse_args()
+def init_app_settings(app: web.Application, argv) -> None:
+    args = parse_args(argv)
     config = args.config
     server_settings = config['server_settings']
     log_level = server_settings.get('log_level', 'INFO')
