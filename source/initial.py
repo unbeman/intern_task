@@ -5,7 +5,7 @@ import argparse
 import configparser
 
 
-def get_config(path: str) -> None:
+def get_config_from_path(path: str) -> None:
     config = configparser.ConfigParser()
     config.read(path)
     return config.__dict__['_sections']
@@ -13,18 +13,19 @@ def get_config(path: str) -> None:
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('-c', '--config', dest='config', type=get_config, help='Path to config file with ini format\n'
-                                                                               'Schema:\n'
-                                                                               '[server_settings]\n'
-                                                                               'host\n'
-                                                                               'port\n'
-                                                                               'log_level - optional'
-                                                                               '[database_settings]\n'
-                                                                               'host\n'
-                                                                               'port\n'
-                                                                               'name\n'
-                                                                               'user\n'
-                                                                               'password\n'
+    parser.add_argument('-c', '--config', dest='config', type=get_config_from_path, help='Path to config file with '
+                                                                                         'ini format\n '
+                                                                                         'Schema:\n'
+                                                                                         '[server_settings]\n'
+                                                                                         'host\n'
+                                                                                         'port\n'
+                                                                                         'log_level - optional'
+                                                                                         '[database_settings]\n'
+                                                                                         'host\n'
+                                                                                         'port\n'
+                                                                                         'name\n'
+                                                                                         'user\n'
+                                                                                         'password\n'
                         )
     return parser.parse_args(argv)
 
@@ -34,9 +35,13 @@ def init_logging(log_level: str) -> None:
     logging.basicConfig(format=fmt, level=logging.getLevelName(log_level))
 
 
-def init_app_settings(app: web.Application, argv) -> None:
+def get_config(argv):
     args = parse_args(argv)
-    config = args.config
+    return args.config
+
+
+def init_app_settings(app: web.Application, argv) -> None:
+    config = get_config(argv)
     server_settings = config['server_settings']
     log_level = server_settings.get('log_level', 'INFO')
     init_logging(log_level)
