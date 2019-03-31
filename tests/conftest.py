@@ -1,29 +1,21 @@
 import pytest
 
-from initial import get_config
+from initial import get_config, BASE_DIR
 from source.app import init_app
 from db_helpers import setup_db, teardown_db, drop_tables, create_tables, create_sample_data
 
-test_config = '../test_config.ini'
-
-admin_database_settings = {
-    'name': 'notify_db',
-    'user': 'postgres',
-    'password': '1211',
-    'host': '127.0.0.1',
-    'port': 5432,
-}
+TEST_CONFIG = BASE_DIR / 'TEST_CONFIG.toml'
 
 
 @pytest.fixture
 async def api(aiohttp_client):
-    app = init_app(['-c', test_config])
+    app = init_app(['-c', TEST_CONFIG.as_posix()])
     return await aiohttp_client(app)
 
 
 @pytest.fixture(scope='session')
 def database():
-    db_settings = get_config(['-c', test_config])['database_settings']
+    db_settings = get_config(['-c', TEST_CONFIG.as_posix()])['database_settings']
     setup_db(db_settings)
     yield
     teardown_db(db_settings)

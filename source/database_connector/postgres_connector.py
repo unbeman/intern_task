@@ -1,6 +1,6 @@
 import aiopg.sa
 import logging
-import utils
+import source.utils
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Numeric, UniqueConstraint
 
 logger = logging.getLogger(__name__)

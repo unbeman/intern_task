@@ -1,0 +1,6 @@
+[database_settings]
+name = 'postgres'
+user = 'postgres'
+password = '1211'
+host = '127.0.0.1'
+port = 5432

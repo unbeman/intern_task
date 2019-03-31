@@ -1,14 +1,16 @@
 import logging
-
+import pathlib
 from aiohttp import web
 import argparse
-import configparser
+import pytoml
+
+BASE_DIR = pathlib.Path(__file__).parent.parent
 
 
 def get_config_from_path(path: str) -> None:
-    config = configparser.ConfigParser()
-    config.read(path)
-    return config.__dict__['_sections']
+    with open(path) as f:
+        config = pytoml.load(f)
+    return config
 
 
 def parse_args(argv):
