@@ -1,8 +1,7 @@
 import aiopg.sa
-import sqlalchemy
 import logging
 import utils
-from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey, Numeric, DateTime, UniqueConstraint
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Numeric, UniqueConstraint
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +44,10 @@ goods = Table(
 # TODO: wrap exceptions
 class AsyncPostgresqlConnector:
     def __init__(self, name: str, user: str, password: str, host: str, port: int):
-        self.admin_db_name = 'notify_db'  # TODO: ВЫПИЛИТЬ
-        self.admin_dsn = "dbname={} user={} password={} host={} port={}".format(self.admin_db_name, user, password, host, port)
         self.db_name = name
         self.dsn = "dbname={} user={} password={} host={} port={}".format(name, user, password, host, port)
         self.engine = None
         self.admin_engine = None
-
-    async def init_admin_db(self):
-        self.admin_engine = await aiopg.sa.create_engine(dsn=self.admin_dsn, echo=True)
-
-    async def close_admin_db(self):
-        self.admin_engine.close()
-        await self.engine.wait_closed()
 
     async def init(self):
         self.engine = await aiopg.sa.create_engine(dsn=self.dsn, echo=True)
