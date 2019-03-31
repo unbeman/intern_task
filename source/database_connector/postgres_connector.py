@@ -1,6 +1,6 @@
 import aiopg.sa
 import logging
-import source.utils
+from source.utils import RecordNotFound, TransactionFailed
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, Numeric, UniqueConstraint
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class AsyncPostgresqlConnector:
             if row:
                 answer = {key: value for key, value in row.items()}
             else:
-                raise utils.RecordNotFound("Worker with {} id does not exist".format(company_id))
+                raise RecordNotFound("Worker with {} id does not exist".format(company_id))
         return answer
 
     async def insert_company(self, data: dict) -> dict:
@@ -114,7 +114,7 @@ class AsyncPostgresqlConnector:
             if row:
                 answer = {key: value for key, value in row.items()}
             else:
-                raise utils.RecordNotFound("Worker with {} id does not exist".format(worker_id))
+                raise RecordNotFound("Worker with {} id does not exist".format(worker_id))
         return answer
 
     async def __insert_item(self, conn, data: dict):
@@ -128,7 +128,7 @@ class AsyncPostgresqlConnector:
                     for item in data:
                         await self.__insert_item(conn, **item)
                 except Exception:
-                    raise utils.TransactionFailed()
+                    raise TransactionFailed()
         return True
 
     async def get_items(self):
