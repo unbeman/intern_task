@@ -78,7 +78,7 @@ goods_schema = {
                       "type": "string"
                   },
                   "price": {
-                      "type": "integer"
+                      "type": "number"
                   },
                   "count": {
                       "type": "integer"
@@ -88,6 +88,9 @@ goods_schema = {
                   },
                   "company_id": {
                       "type": "integer"
+                  },
+                  "tags": {
+                      "type": "array"
                   }
               }},
     "required": [
@@ -98,7 +101,7 @@ goods_schema = {
 
 }
 
-assign_worker_to_item_schema = {
+assign_worker_to_goods_schema = {
     "type": "object",
     "properties": {
         "worker_id": {
@@ -110,7 +113,7 @@ assign_worker_to_item_schema = {
     ]
 }
 
-update_item_schema = {
+update_goods_schema = {
     "type": "object",
     "properties": {
         "description": {

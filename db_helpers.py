@@ -1,5 +1,5 @@
 from source.initial import get_config, BASE_DIR
-from source.database_connector.postgres_connector import companies, workers, goods, meta
+from source.database_connector.postgres_connector import companies, workers, goods, tags, tags_to_goods, meta
 from sqlalchemy import create_engine
 
 DSN = "postgresql://{user}:{password}@{host}:{port}/{name}"
@@ -41,12 +41,12 @@ def setup_db(db_settings):
 
 
 def create_tables(engine=test_engine):
-    meta.create_all(bind=engine, tables=[companies, workers, goods])
+    meta.create_all(bind=engine, tables=[companies, workers, goods, tags, tags_to_goods])
     print('CREATE TABLES')
 
 
 def drop_tables(engine=test_engine):
-    meta.drop_all(bind=engine, tables=[goods, workers, companies])
+    meta.drop_all(bind=engine, tables=[tags_to_goods, tags, goods, workers, companies])
     print('DROP TABLES')
 
 
@@ -58,6 +58,9 @@ def create_sample_data(engine=test_engine):
                                          "company_id": 1, "id": 1}])
         conn.execute(goods.insert(), [{"title": "Pretzel", "description": "It's tasty!", "price": "30",
                                        "counts": 20, "worker_id": 1, "company_id": 1, "id": 1}])
+        conn.execute("SELECT setval('companies_id_seq', (SELECT max(id) FROM companies));")
+        conn.execute("SELECT setval('workers_id_seq', (SELECT MAX(id) FROM workers))")
+        conn.execute("SELECT setval('goods_id_seq', (SELECT MAX(id) FROM goods))")
 
 
 if __name__ == '__main__':
@@ -88,6 +91,6 @@ if __name__ == '__main__':
         teardown_db(USER_CONFIG)
         setup_db(USER_CONFIG)
         create_tables(user_engine)
-        # create_sample_data()
+        create_sample_data()
     else:
         parser.print_help()

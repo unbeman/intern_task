@@ -21,8 +21,8 @@ class RequestHandler:
         app.router.add_post('/worker/{worker_id}', self.update_worker)
         app.router.add_get('/worker/{worker_id}', self.get_worker)
         # app.router.add_post('/worker/bind', self.bind_worker_to_company)
-        app.router.add_post('/item/{item_id}/assign', self.assign_worker_to_item)
-        app.router.add_post('/item/{item_id}', self.update_item)
+        app.router.add_post('/goods/{goods_id}/assign', self.assign_worker_to_goods)
+        app.router.add_post('/goods/{goods_id}', self.update_goods)
         app.router.add_post('/storefront', self.fill_storefront)
         app.router.add_get('/storefront', self.get_goods_in_storefront)
 
@@ -65,25 +65,25 @@ class RequestHandler:
     async def fill_storefront(self, request: web.Request) -> web.Response:
         data = await request.json()
         jsonschema.validate(data, utils.goods_schema)
-        await self.controller.add_items(data)
-        return web.Response()
-
-    async def get_goods_in_storefront(self, request: web.Request) -> web.Response:
-        answer = await self.controller.get_items_list()
+        answer = await self.controller.add_goods(data)
         return web.json_response(answer)
 
-    async def assign_worker_to_item(self, request: web.Request) -> web.Response:
-        item_id = request.match_info['item_id']
+    async def get_goods_in_storefront(self, request: web.Request) -> web.Response:
+        answer = await self.controller.get_goods_list()
+        return web.json_response(answer)
+
+    async def assign_worker_to_goods(self, request: web.Request) -> web.Response:
+        goods_id = request.match_info['goods_id']
         data = await request.json()
-        jsonschema.validate(data, utils.assign_worker_to_item_schema)
-        await self.controller.assign_worker_to_item(item_id, data)
+        jsonschema.validate(data, utils.assign_worker_to_goods_schema)
+        await self.controller.assign_worker_to_goods(goods_id, data)
         return web.Response()
 
-    async def update_item(self, request: web.Request) -> web.Response:
-        item_id = request.match_info['item_id']
+    async def update_goods(self, request: web.Request) -> web.Response:
+        goods_id = request.match_info['goods_id']
         data = await request.json()
-        jsonschema.validate(data, utils.update_item_schema)
-        await self.controller.update_item(item_id, data)
+        jsonschema.validate(data, utils.update_goods_schema)
+        await self.controller.update_goods(goods_id, data)
         return web.Response()
 
     async def get_workers_of_company(self, request: web.Request):

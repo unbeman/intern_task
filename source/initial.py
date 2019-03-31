@@ -45,7 +45,7 @@ def get_config(argv):
 def init_app_settings(app: web.Application, argv) -> None:
     config = get_config(argv)
     server_settings = config['server_settings']
-    log_level = server_settings.get('log_level', 'INFO')
+    log_level = server_settings.get('log_level', 'DEBUG')
     init_logging(log_level)
     database_settings = config['database_settings']
     app['host'] = server_settings.get('host')
