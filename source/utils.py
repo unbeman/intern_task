@@ -128,16 +128,8 @@ update_goods_schema = {
         "worker_id": {
             "type": "integer"
         }
-    },
-    "required": [
-        "worker_id"
-    ]
+    }
 }
 
-
-class RecordNotFound(Exception):
-    pass
-
-
-class TransactionFailed(Exception):
+class NotFound(Exception):
     pass

@@ -1,10 +1,6 @@
 import aiopg.sa
 import logging
 
-try:
-    from utils import RecordNotFound, TransactionFailed
-except:
-    from source.utils import RecordNotFound, TransactionFailed
 from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, UniqueConstraint, \
     PrimaryKeyConstraint, Float, select
 
@@ -73,145 +69,138 @@ class AsyncPostgresqlConnector:
         self.engine.close()
         await self.engine.wait_closed()
 
-    async def get_company_by_id(self, company_id: int) -> dict:
+    async def get_company_by_id(self, conn, company_id: int) -> dict:
         answer = {}
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(companies.select().where(companies.c.id == company_id))
-            row = await result.first()
-            if row:
-                answer = parse_row_result(row.items())  # TODO: wrap to function get_items_from_row
-            else:
-                raise RecordNotFound("Worker with {} id does not exist".format(company_id))
+        result = await conn.execute(companies.select().where(companies.c.id == company_id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())  # TODO: wrap to function get_items_from_row
         return answer
 
-    async def insert_company(self, data: dict) -> dict:
+    async def insert_company(self, conn, data: dict) -> dict:
         answer = {}
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(
-                companies.insert().values(**data).returning(companies.c.id))
-            row = await result.first()
-            if row:
-                answer = parse_row_result(row.items())
+        result = await conn.execute(
+            companies.insert().values(**data).returning(companies.c.id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
         return answer
 
-    async def update_company(self, company_id, data: dict) -> bool:
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(
-                companies.update().values(**data).where(companies.c.id == company_id))
-            count = result.rowcount
-            if count:
-                return True
+    async def update_company(self, conn, company_id, data: dict) -> bool:
+        result = await conn.execute(
+            companies.update().values(**data).where(companies.c.id == company_id))
+        count = result.rowcount
+        if count:
+            return True
         return False
 
-    async def insert_worker(self, data: dict) -> dict:
+    async def insert_worker(self, conn, data: dict) -> dict:
         answer = {}
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(
-                workers.insert().values(**data).returning(workers.c.id))
-            row = await result.first()
-            if row:
-                answer = parse_row_result(row.items())
+        result = await conn.execute(
+            workers.insert().values(**data).returning(workers.c.id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
         return answer
 
-    async def update_worker(self, worker_id: int, data: dict) -> bool:
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(
-                workers.update().values(**data).where(
-                    workers.c.id == worker_id))
-            count = result.rowcount
-            if count:
-                return True
+    async def update_worker(self, conn, worker_id: int, data: dict) -> bool:
+        result = await conn.execute(
+            workers.update().values(**data).where(
+                workers.c.id == worker_id))
+        count = result.rowcount
+        if count:
+            return True
         return False
 
-    async def get_worker_by_id(self, worker_id: int) -> dict:
+    async def get_worker_by_id(self, conn, worker_id: int) -> dict:
         answer = {}
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(workers.select().where(workers.c.id == worker_id))
-            row = await result.first()
-            if row:
-                answer = parse_row_result(row.items())
-            else:
-                raise RecordNotFound("Worker with {} id does not exist".format(worker_id))
+        result = await conn.execute(workers.select().where(workers.c.id == worker_id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
         return answer
 
-    async def insert_goods(self, data: dict) -> dict:
-        answer = {}
-        async with self.engine.acquire() as conn:
-            async with conn.begin():
-                try:
-                    result = await conn.execute(
-                        goods.insert().values(**data).returning(goods.c.id, goods.c.title, goods.c.company_id))
-                    row = await result.first()
-                    if row:
-                        answer = parse_row_result(row.items())
-                except Exception:
-                    raise TransactionFailed()
-        return answer
-
-    async def insert_tag(self, tag_name: str) -> dict:
-        answer = {}
-        async with self.engine.acquire() as conn:
-            async with conn.begin():
-                try:
-                    result = await conn.execute(tags.insert().values(title=tag_name).returning(tags.c.id, tags.c.title))
-                    row = await result.first()
-                    if row:
-                        answer = parse_row_result(row.items())
-                except Exception:
-                    raise TransactionFailed()
-        return answer
-
-    async def get_tag_by_title(self, title: str) -> dict:
-        answer = {}
-        async with self.engine.acquire() as conn:
-            async with conn.begin():
-                try:
-                    result = await conn.execute(tags.select().where(tags.c.title == title))
-                    row = await result.first()
-                    if row:
-                        answer = parse_row_result(row.items())
-                except Exception:
-                    raise TransactionFailed()
-        return answer
-
-    async def insert_tags_to_goods(self, tag_id: int, goods_id: int):
-        async with self.engine.acquire() as conn:
-            async with conn.begin():
-                try:
-                    await conn.execute(tags_to_goods.insert().values(tag_id=tag_id, goods_id=goods_id))
-                except Exception:
-                    raise TransactionFailed()
-        return
-
-    async def get_goods(self):
+    async def get_workers_by_company_id(self, conn, company_id: int) -> list:
         answer = []
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(goods.select())
-            rows = await result.fetchall()
-            for row in rows:
-                answer.append(parse_row_result(row.items()))
+        result = await conn.execute(workers.select().where(workers.c.company_id == company_id))
+        rows = await result.fetchall()
+        for row in rows:
+            answer.append(parse_row_result(row.items()))
         return answer
 
-    async def get_tags_of_goods(self, goods_id: int):
+    async def insert_goods(self, conn, data: dict) -> dict:
+        answer = {}
+        result = await conn.execute(
+            goods.insert().values(**data).returning(goods.c.id, goods.c.title, goods.c.company_id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
+        return answer
+
+    async def insert_tag(self, conn, tag_name: str) -> dict:
+        answer = {}
+        result = await conn.execute(tags.insert().values(title=tag_name).returning(tags.c.id, tags.c.title))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
+        return answer
+
+    async def delete_goods_tag(self, conn, goods_id, tag_id: str):
+        result = await conn.execute(tags_to_goods.delete().where(tags_to_goods.c.tag_id == tag_id
+                                                                 and tags_to_goods.goods_id == goods_id))
+        row = result.rowcount
+        if row:
+            return True
+        return False
+
+    async def get_tag_by_title(self, conn, title: str) -> dict:
+        answer = {}
+        result = await conn.execute(tags.select().where(tags.c.title == title))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
+        return answer
+
+    async def insert_tags_to_goods(self, conn, tag_id: int, goods_id: int):
+        await conn.execute(tags_to_goods.insert().values(tag_id=tag_id, goods_id=goods_id))
+
+    async def get_goods_by_id(self, conn, goods_id):
+        answer = {}
+        result = await conn.execute(goods.select().where(goods.c.id == goods_id))
+        row = await result.first()
+        if row:
+            answer = parse_row_result(row.items())
+        return answer
+
+    async def get_goods(self, conn, company_id=None):
         answer = []
-        async with self.engine.acquire() as conn:
-            j = tags.join(tags_to_goods, tags_to_goods.c.tag_id == tags.c.id)
-            result = await conn.execute(
-                select([tags.c.title]).select_from(j).where(tags_to_goods.c.goods_id == goods_id)
-                )
-            rows = await result.fetchall()
-            for row in rows:
-                answer.append(parse_row_result(row.items()))
+        query = goods.select()
+        if company_id:
+            query = query.where(goods.c.company_id == company_id)
+        result = await conn.execute(query)
+        rows = await result.fetchall()
+        for row in rows:
+            answer.append(parse_row_result(row.items()))
         return answer
 
-    async def update_goods(self, item_id: int, data):
-        async with self.engine.acquire() as conn:
-            result = await conn.execute(
-                goods.update().values(**data).where(
-                    goods.c.id == item_id))
-            count = result.rowcount
-            if count:
-                return True
+    async def get_tags_of_goods(self, conn, goods_id: int):
+        answer = []
+        j = tags.join(tags_to_goods, tags_to_goods.c.tag_id == tags.c.id)
+        result = await conn.execute(
+            select([tags.c.title]).select_from(j).where(tags_to_goods.c.goods_id == goods_id)
+        )
+        rows = await result.fetchall()
+        for row in rows:
+            answer.append(parse_row_result(row.items()))
+        return answer
+
+    async def update_goods(self, conn, goods_id: int, data):
+        result = await conn.execute(
+            goods.update().values(**data).where(
+                goods.c.id == goods_id))
+        count = result.rowcount
+        if count:
+            return True
         return False
 
 

@@ -1,7 +1,7 @@
 import logging
 from json import JSONDecodeError
-
 import jsonschema
+import psycopg2
 from aiohttp import web
 import utils
 
@@ -24,10 +24,9 @@ async def error_middleware(request, handler):
         logger.exception(e)
         resp = web.json_response({'error': 'Invalid json payload'}, status=400)
         return resp
-    except utils.RecordNotFound as e:
-        resp = web.json_response({'error': str(e)}, status=404)
-        return resp
-    except utils.TransactionFailed:
+    except utils.NotFound as e:
+        return web.json_response({'error': str(e)}, status=404)
+    except psycopg2.IntegrityError:
         return web.Response(status=400)
     except Exception as e:
         logger.exception(e)

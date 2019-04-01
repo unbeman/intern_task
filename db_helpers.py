@@ -58,9 +58,12 @@ def create_sample_data(engine=test_engine):
                                          "company_id": 1, "id": 1}])
         conn.execute(goods.insert(), [{"title": "Pretzel", "description": "It's tasty!", "price": "30",
                                        "counts": 20, "worker_id": 1, "company_id": 1, "id": 1}])
-        conn.execute("SELECT setval('companies_id_seq', (SELECT max(id) FROM companies));")
-        conn.execute("SELECT setval('workers_id_seq', (SELECT MAX(id) FROM workers))")
-        conn.execute("SELECT setval('goods_id_seq', (SELECT MAX(id) FROM goods))")
+        conn.execute(tags.insert(), [{"title": "Pastry", "id": 3}])
+        conn.execute(tags_to_goods.insert(), [{"tag_id": 3, "goods_id": 1}])
+        conn.execute("SELECT setval('companies_id_seq', (SELECT max(id) FROM companies)+1);")
+        conn.execute("SELECT setval('workers_id_seq', (SELECT MAX(id) FROM workers)+1);")
+        conn.execute("SELECT setval('goods_id_seq', (SELECT MAX(id) FROM goods)+1);")
+        conn.execute("SELECT setval('tags_id_seq', (SELECT MAX(id) FROM tags)+1);")
 
 
 if __name__ == '__main__':

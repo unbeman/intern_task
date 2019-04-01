@@ -15,12 +15,13 @@ class RequestHandler:
     def __add_routes(self, app: web.Application) -> None:
         app.router.add_post('/company', self.create_company)
         app.router.add_post('/company/{company_id}', self.update_company)
+        app.router.add_get('/company', self.get_companies)
         app.router.add_get('/company/{company_id}', self.get_company)
+        app.router.add_get('/company/{company_id}/goods', self.get_goods_of_company)
         app.router.add_get('/company/{company_id}/workers', self.get_workers_of_company)
         app.router.add_post('/worker', self.create_worker)
         app.router.add_post('/worker/{worker_id}', self.update_worker)
         app.router.add_get('/worker/{worker_id}', self.get_worker)
-        # app.router.add_post('/worker/bind', self.bind_worker_to_company)
         app.router.add_post('/goods/{goods_id}/assign', self.assign_worker_to_goods)
         app.router.add_post('/goods/{goods_id}', self.update_goods)
         app.router.add_post('/storefront', self.fill_storefront)
@@ -87,10 +88,14 @@ class RequestHandler:
         return web.Response()
 
     async def get_workers_of_company(self, request: web.Request):
-        pass
+        company_id = request.match_info['company_id']
+        answer = await self.controller.get_workers_by_company_id(company_id)
+        return web.json_response(answer)
 
     async def get_goods_of_company(self, request: web.Request):
-        pass
+        company_id = request.match_info['company_id']
+        answer = await self.controller.get_goods_of_company_id(company_id)
+        return web.json_response(answer)
 
     async def get_companies(self, request: web.Request):
         pass
