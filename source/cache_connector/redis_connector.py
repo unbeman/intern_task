@@ -9,7 +9,7 @@ class RedisConnector:
         self.loop = loop
 
     async def init(self):
-        self.pool = await aioredis.create_redis_pool((self.host, self.port), loop=loop)
+        self.pool = await aioredis.create_redis_pool((self.host, self.port), loop=self.loop)
 
     async def close(self):
         self.pool.close()

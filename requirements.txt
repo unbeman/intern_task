@@ -2,6 +2,8 @@ aiohttp
 aiopg
 aioredis
 pytoml
+jsonschema
+sqlalchemy
 
 # testing
 pytest
